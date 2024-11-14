@@ -108,6 +108,6 @@ app.patch('/api/data/:dataId/candidates/:candidateId/vote', async (req, res) => 
     res.json({ message: 'Vote count updated successfully' });
 });
 
-app.listen(port, '46.16.36.208', () => {
-    console.log(`Server running at http://46.16.36.208:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Сервер запущен на http://0.0.0.0:${port}`);
 });
