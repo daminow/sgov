@@ -13,18 +13,7 @@ const pool = new Pool({
     port: 5432,
 });
 
-// 1. Управление администратором
-app.get('/api/admin', async (req, res) => {
-    const result = await pool.query('SELECT * FROM settings LIMIT 1');
-    res.json(result.rows[0]);
-});
-app.patch('/api/admin', async (req, res) => {
-    const { adminName, password, titleSite } = req.body;
-    await pool.query('UPDATE settings SET adminName = $1, password = $2, titleSite = $3', [adminName, password, titleSite]);
-    res.json({ message: 'Admin settings updated successfully' });
-});
-
-// 2. Работа с сеансами
+// 1. Работа с сеансами
 app.post('/api/sessions', async (req, res) => {
     const { name, type } = req.body;
     const id = Math.floor(100000 + Math.random() * 900000).toString(); // Генерация id
@@ -54,7 +43,7 @@ app.patch('/api/sessions/:id/code', async (req, res) => {
     res.json({ message: 'Session code updated successfully' });
 });
 
-// 3. Работа с данными
+// 2. Работа с данными
 app.get('/api/data', async (req, res) => {
     const result = await pool.query('SELECT * FROM data');
     res.json(result.rows);
@@ -77,7 +66,7 @@ app.patch('/api/data/:id', async (req, res) => {
     res.json({ message: 'Data name updated successfully' });
 });
 
-// 4. Управление кандидатами
+// 3. Управление кандидатами
 app.post('/api/data/:id/candidates', async (req, res) => {
     const { id } = req.params;
     const { fullName, class: className, photo } = req.body;
@@ -109,5 +98,5 @@ app.patch('/api/data/:dataId/candidates/:candidateId/vote', async (req, res) => 
 });
 
 app.listen(port, '0.0.0.0', () => {
-    console.log(`Сервер запущен на http://0.0.0.0:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 });
