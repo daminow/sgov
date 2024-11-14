@@ -207,9 +207,6 @@ exports.default = gulp.series(
     processScss,
   ),
   gulp.parallel(
-    processImages,
-  ),
-  gulp.parallel(
     watchFiles,
     browserSync,
   ),
