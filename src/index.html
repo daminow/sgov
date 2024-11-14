@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goverment of SEHRIYO</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter&family=Roboto:ital,wght@1,100&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,100&family=Ubuntu:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header__container">
+                <img src="img/header_logo.png" class="header__logo" alt="Логотип Школы">
+                <h1 class="header__title">
+                    Выборы правительства школы 2023&nbsp;-&nbsp;2024 учебного года
+                </h1>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <div class="type__container">
+                <ul class="ul-reset candidates-type__list candidates-type__list-hight">
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="presedent-btn">Президент</button>
+                    </li>
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="prime-btn">Премьер-министр средней и старшей школы</button>
+                    </li>
+                </ul>
+                <ul class="ul-reset candidates-type__list candidates-type__list-ministry">
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="min-edu-btn">Министр образования</button>
+                    </li>
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="min-fin-btn">Министр финансов</button>
+                    </li>
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="min-eco-btn">Министр экологии</button>
+                    </li>
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="min-sport-btn">Министр спорта</button>
+                    </li>
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="min-jour-btn">Министр СМИ</button>
+                    </li>
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="min-char-btn">Глава Благотворительного фонда</button>
+                    </li>
+                    <li class="candidate-type__item">
+                        <button class="btn-reset candidate-type__btn-na" id="min-affair-btn">Министр дисциплины и порядка</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="timer__container opacity-0" id="timer-container">
+                <h2 class="timer__title" id="timer"></h2>
+            </div>
+            <ul class="ul-reset candidates-cards__list" id="cand-list">
+            </ul>
+        </div>
+    </main>
+    <footer class="footer"></footer>
+    <script defer type="module" src="js/main.js"></script>
+</body>
+</html>
