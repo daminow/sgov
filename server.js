@@ -269,21 +269,30 @@ app.patch('/api/nominations/:nominationId/candidates/:candidateId/vote', async (
 });
 
 // Работа с сессиями
-app.post('/api/sessions', async (req, res) => {
-    const { name, type } = req.body;
-    const id = Math.floor(100000 + Math.random() * 900000).toString();
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const createdAt = new Date();
-    const devices = 0;
+app.post('/api/sessions',
+    body('name').isString().notEmpty(),
+    body('type').isString().notEmpty(),
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-    try {
-        await pool.query('INSERT INTO sessions (id, name, createdAt, devices, type, code) VALUES ($1, $2, $3, $4, $5, $6)', [id, name, createdAt, devices, type, code]);
-        res.status(201).json({ id, name, createdAt, devices, type, code });
-    } catch (err) {
-        console.error('Error creating session:', err);
-        res.status(500).json({ message: 'Internal server error' });
+        const { name, type } = req.body;
+        const id = Math.floor(100000 + Math.random() * 900000).toString();
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const createdAt = new Date();
+        const devices = 0;
+
+        try {
+            await pool.query('INSERT INTO sessions (id, name, createdAt, devices, type, code) VALUES ($1, $2, $3, $4, $5, $6)', [id, name, createdAt, devices, type, code]);
+            res.status(201).json({ id, name, createdAt, devices, type, code });
+        } catch (err) {
+            console.error('Error creating session:', err);
+            res.status(500).json({ message: 'Internal server error' });
+        }
     }
-});
+);
 
 // Получение всех сессий
 app.get('/api/sessions', async (req, res) => {
@@ -386,13 +395,13 @@ app.post('/api/admins/login', async (req, res) => {
 
         const admin = result.rows[0];
 
-        // Здесь должна быть проверка пароля (например, с использованием bcrypt)
+        // Check password using bcrypt
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
-        // Генерация токена
+        // Generate token
         const token = jwt.sign({ id: admin.id, access_level: admin.access_level }, process.env.SECRET_KEY, { expiresIn: '1h' });
         res.json({ token });
     } catch (err) {
@@ -401,7 +410,7 @@ app.post('/api/admins/login', async (req, res) => {
     }
 });
 
-// Эндпоинт для изменения уровня доступа администратора
+// Endpoint to change admin access level
 app.patch('/api/admins/:id/access-level', async (req, res) => {
     const { id } = req.params;
     const { access_level } = req.body;
@@ -419,7 +428,7 @@ app.patch('/api/admins/:id/access-level', async (req, res) => {
     }
 });
 
-// Обновленный эндпоинт для получения всех администраторов
+// Updated endpoint to get all admins
 app.get('/api/admins', async (req, res) => {
     try {
         const result = await pool.query('SELECT id, username, access_level FROM admins');

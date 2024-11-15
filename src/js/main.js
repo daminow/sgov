@@ -37,6 +37,11 @@ let selectStatus = false;
 let openCardStatus = false;
 let massivesVote = massivesVotes;
 
+// DOM Elements for session code
+const sessionCodeInput = document.getElementById('session-code');
+const submitSessionCodeButton = document.getElementById('submit-session-code');
+const sessionError = document.getElementById('session-error');
+
 // Helper Functions
 function safeJsonParse(data) {
     try {
@@ -46,7 +51,6 @@ function safeJsonParse(data) {
         return null;
     }
 }
-
 
 function setCandidatesData(name, data) {
     setData(name, dataToJson(data));
@@ -125,6 +129,39 @@ function handleButtonClick(chartType) {
         setData('candidates', dataToJson(massivesVote));
     };
 }
+
+// Function to handle session code submission
+async function handleSessionCodeSubmission() {
+    const sessionCode = sessionCodeInput.value;
+
+    try {
+        const response = await fetch('/api/sessions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code: sessionCode }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            sessionError.textContent = errorData.message || 'Ошибка при вводе кода сессии';
+            return;
+        }
+
+        const sessionData = await response.json();
+        localStorage.setItem('sessionId', sessionData.id);
+        localStorage.setItem('sessionType', sessionData.type);
+        // Load nominations based on session type
+        loadNominations(sessionData.type);
+    } catch (error) {
+        console.error('Error submitting session code:', error);
+        sessionError.textContent = 'Ошибка сети. Попробуйте еще раз.';
+    }
+}
+
+// Event listener for session code submission
+submitSessionCodeButton.addEventListener('click', handleSessionCodeSubmission);
 
 // Event Listeners
 buttons.PRESIDENT.addEventListener('click', handleButtonClick(CANDIDATE_TYPES.PRESIDENT));
