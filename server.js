@@ -162,6 +162,44 @@ app.patch('/api/users/:id', async (req, res) => {
     res.json({ message: 'User updated successfully' });
 });
 
+// Эндпоинт для входа в админ-панель
+app.post('/api/admins/login', async (req, res) => {
+    const { username, password } = req.body;
+    const result = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
+
+    if (result.rows.length === 0) {
+        return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    const admin = result.rows[0];
+
+    // Здесь должна быть проверка пароля (например, с использованием bcrypt)
+    if (admin.password !== password) {
+        return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    res.json({ id: admin.id, username: admin.username, access_level: admin.access_level });
+});
+
+// Эндпоинт для изменения уровня доступа администратора
+app.patch('/api/admins/:id/access-level', async (req, res) => {
+    const { id } = req.params;
+    const { access_level } = req.body;
+
+    if (![1, 2, 3].includes(access_level)) {
+        return res.status(400).json({ message: 'Invalid access level' });
+    }
+
+    await pool.query('UPDATE admins SET access_level = $1 WHERE id = $2', [access_level, id]);
+    res.json({ message: 'Access level updated successfully' });
+});
+
+// Обновленный эндпоинт для получения всех администраторов
+app.get('/api/admins', async (req, res) => {
+    const result = await pool.query('SELECT id, username, access_level FROM admins');
+    res.json(result.rows);
+});
+
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server running at http://localhost:${port}`);
 });

@@ -43,6 +43,26 @@ app.patch('/api/users/:id', async (req, res) => {
     res.json({ message: 'User updated successfully' });
 });
 
+// Admin API
+app.post('/api/admins/login', async (req, res) => {
+    const { username, password } = req.body;
+    // Dummy check for admin login
+    if (username === 'adminuser' && password === 'adminpass') {
+        const id = 'admin123';
+        const access_level = 1;
+        res.status(200).json({ id, username, access_level });
+    } else {
+        res.status(401).send();
+    }
+});
+
+app.patch('/api/admins/:id/access-level', async (req, res) => {
+    const { id } = req.params;
+    const { access_level } = req.body;
+    // Dummy update for access level
+    res.json({ message: 'Access level updated successfully' });
+});
+
 // Тесты
 describe('User API', () => {
     it('should create a new user', async () => {
@@ -73,6 +93,34 @@ describe('User API', () => {
         const userId = '1'; // Замените на реальный id пользователя
         const response = await request(app).delete(`/api/users/${userId}`);
         expect(response.status).toBe(204);
+    });
+});
+
+describe('Admin API', () => {
+    it('should log in an admin', async () => {
+        const response = await request(app)
+            .post('/api/admins/login')
+            .send({ username: 'adminuser', password: 'adminpass' });
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('id');
+        expect(response.body.username).toBe('adminuser');
+        expect(response.body.access_level).toBeDefined();
+    });
+
+    it('should return 401 for invalid login', async () => {
+        const response = await request(app)
+            .post('/api/admins/login')
+            .send({ username: 'wronguser', password: 'wrongpass' });
+        expect(response.status).toBe(401);
+    });
+
+    it('should update access level of an admin', async () => {
+        const adminId = '1'; // Замените на реальный id администратора
+        const response = await request(app)
+            .patch(`/api/admins/${adminId}/access-level`)
+            .send({ access_level: 2 });
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Access level updated successfully');
     });
 });
 
