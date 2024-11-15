@@ -22,7 +22,7 @@ requiredEnvVars.forEach(varName => {
 app.use(express.json());
 app.use(helmet()); // Security headers
 app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
-app.use(morgan('combined')); // Use morgan for logging
+app.use(morgan('combined'));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -40,6 +40,14 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+// Handle connection errors
+pool.connect().then(() => {
+    console.log('Connected to PostgreSQL');
+}).catch(err => {
+    console.error('Error connecting to PostgreSQL:', err);
+    process.exit(1);
+});
+
 // Create users table if it doesn't exist
 const createUsersTable = async () => {
     const query = `
@@ -50,10 +58,15 @@ const createUsersTable = async () => {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `;
-    await pool.query(query);
+    try {
+        await pool.query(query);
+        console.log('Users table is ready');
+    } catch (err) {
+        console.error('Error creating users table:', err);
+    }
 };
 
-createUsersTable().catch(err => console.error('Error creating users table:', err));
+createUsersTable();
 
 // Middleware for error handling
 const errorHandler = (err, req, res, next) => {
@@ -65,7 +78,6 @@ const errorHandler = (err, req, res, next) => {
 app.post('/api/login', async (req, res, next) => {
     const { username, password } = req.body;
 
-    // Проверка на наличие полей
     if (!username || !password) {
         return res.status(400).json({ message: 'Username and password are required' });
     }
@@ -270,7 +282,6 @@ app.patch('/api/nominations/:nominationId/candidates/:candidateId/vote', async (
 app.post('/api/sessions', async (req, res) => {
     const { name, type } = req.body;
 
-    // Проверка на наличие полей
     if (!name || !type) {
         return res.status(400).json({ message: 'Name and type are required' });
     }
@@ -385,7 +396,7 @@ app.post('/api/admins/login', async (req, res) => {
         const result = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
 
         if (result.rows.length === 0) {
-            return res.status(401).json({ message: 'Invalid username or password' });
+            return res.status(json({ message: 'Invalid username or password' }));
         }
 
         const admin = result.rows[0];
