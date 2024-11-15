@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const morgan = require('morgan'); // Added for logging
 require('dotenv').config();
 
 const app = express();
@@ -22,6 +23,7 @@ requiredEnvVars.forEach(varName => {
 app.use(express.json());
 app.use(helmet()); // Security headers
 app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
+app.use(morgan('combined')); // Use morgan for logging
 
 // Rate limiting
 const limiter = rateLimit({
