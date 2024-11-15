@@ -1,5 +1,10 @@
 const express = require('express');
 const { Pool } = require('pg');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+const SECRET_KEY = 'ваш_секретный_ключ'; // Замените на ваш секретный ключ
 const app = express();
 const port = 3000;
 
@@ -29,6 +34,52 @@ const createUsersTable = async () => {
 
 // Вызов функции создания таблицы при запуске сервера
 createUsersTable().catch(err => console.error('Error creating users table:', err));
+
+// Настройка CORS
+const corsOptions = {
+    origin: 'http://ваш_домен', // Замените на ваш домен
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true, // Разрешить отправку куки
+};
+
+app.use(cors(corsOptions));
+
+// Эндпоинт для входа
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+    if (result.rows.length === 0) {
+        return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    const user = result.rows[0];
+
+    // Проверка пароля
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    // Генерация токена
+    const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: '1h' });
+    res.json({ token });
+});
+
+// Middleware для проверки токена
+const authenticateToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.sendStatus(401);
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+};
+
+// Применение middleware к защищенным маршрутам
+app.use('/api', authenticateToken);
 
 // 1. Работа с голосованиями
 app.post('/api/votes', async (req, res) => {
@@ -156,7 +207,9 @@ app.post('/api/users', async (req, res) => {
     const id = Math.floor(100000 + Math.random() * 900000).toString(); // Генерация id
     const createdAt = new Date();
 
-    await pool.query('INSERT INTO users (id, username, password, created_at) VALUES ($1, $2, $3, $4)', [id, username, password, createdAt]);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await pool.query('INSERT INTO users (id, username, password, created_at) VALUES ($1, $2, $3, $4)', [id, username, hashedPassword, createdAt]);
     res.status(201).json({ id, username, createdAt });
 });
 
@@ -174,7 +227,8 @@ app.delete('/api/users/:id', async (req, res) => {
 app.patch('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     const { username, password } = req.body;
-    await pool.query('UPDATE users SET username = $1, password = $2 WHERE id = $3', [username, password, id]);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query('UPDATE users SET username = $1, password = $2 WHERE id = $3', [username, hashedPassword, id]);
     res.json({ message: 'User updated successfully' });
 });
 
@@ -190,11 +244,14 @@ app.post('/api/admins/login', async (req, res) => {
     const admin = result.rows[0];
 
     // Здесь должна быть проверка пароля (например, с использованием bcrypt)
-    if (admin.password !== password) {
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
         return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    res.json({ id: admin.id, username: admin.username, access_level: admin.access_level });
+    // Генерация токена
+    const token = jwt.sign({ id: admin.id, access_level: admin.access_level }, SECRET_KEY, { expiresIn: '1h' });
+    res.json({ token });
 });
 
 // Эндпоинт для изменения уровня доступа администратора
