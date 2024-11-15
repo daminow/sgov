@@ -8,11 +8,11 @@ app.use(express.json());
 
 // PostgreSQL connection
 const pool = new Pool({
-    user: 'postgres',
-    host: '46.16.36.208',
-    database: 'postgres',
-    password: 'timur15092006',
-    port: 5432,
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
 });
 
 // 1. Работа с пользователями

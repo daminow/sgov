@@ -4,12 +4,31 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Validate environment variables
+const requiredEnvVars = ['DB_USER', 'DB_HOST', 'DB_NAME', 'DB_PASSWORD', 'DB_PORT', 'SECRET_KEY', 'CORS_ORIGIN'];
+requiredEnvVars.forEach(varName => {
+    if (!process.env[varName]) {
+        throw new Error(`Missing required environment variable: ${varName}`);
+    }
+});
+
 app.use(express.json());
+app.use(helmet()); // Security headers
+app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
+
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // Limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
 
 // PostgreSQL connection
 const pool = new Pool({
@@ -20,7 +39,7 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-// Создание таблицы users, если она не существует
+// Create users table if it doesn't exist
 const createUsersTable = async () => {
     const query = `
         CREATE TABLE IF NOT EXISTS users (
@@ -35,26 +54,17 @@ const createUsersTable = async () => {
 
 createUsersTable().catch(err => console.error('Error creating users table:', err));
 
-// Настройка CORS
-const corsOptions = {
-    origin: process.env.CORS_ORIGIN,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-// Middleware для обработки ошибок
+// Middleware for error handling
 const errorHandler = (err, req, res, next) => {
     console.error(err);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
 };
 
-// Эндпоинт для входа
+// Login endpoint
 app.post('/api/login',
     body('username').isString().notEmpty(),
     body('password').isString().notEmpty(),
-    async (req, res) => {
+    async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -69,24 +79,20 @@ app.post('/api/login',
             }
 
             const user = result.rows[0];
-
-            // Проверка пароля
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
                 return res.status(401).json({ message: 'Invalid username or password' });
             }
 
-            // Генерация токена
             const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: '1h' });
             res.json({ token });
         } catch (err) {
-            console.error('Error during login:', err);
-            res.status(500).json({ message: 'Internal server error' });
+            next(err);
         }
     }
 );
 
-// Middleware для проверки токена
+// Middleware for token authentication
 const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
     if (!token) return res.sendStatus(401);
@@ -100,7 +106,7 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Применение middleware к защищенным маршрутам
+// Apply middleware to protected routes
 app.use('/api', authenticateToken);
 
 // Работа с голосованиями
@@ -424,6 +430,16 @@ app.get('/api/admins', async (req, res) => {
     }
 });
 
+// Error handling middleware
+app.use(errorHandler);
+
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server running at http://localhost:${port}`);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    await pool.end();
+    console.log('PostgreSQL pool has ended');
+    process.exit(0);
 });
