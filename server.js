@@ -52,27 +52,33 @@ app.post('/api/login',
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.error('Validation errors:', errors.array());
             return res.status(400).json({ errors: errors.array() });
         }
 
         const { username, password } = req.body;
-        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        try {
+            const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
 
-        if (result.rows.length === 0) {
-            return res.status(401).json({ message: 'Invalid username or password' });
+            if (result.rows.length === 0) {
+                return res.status(401).json({ message: 'Invalid username or password' });
+            }
+
+            const user = result.rows[0];
+
+            // Проверка пароля
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(401).json({ message: 'Invalid username or password' });
+            }
+
+            // Генерация токена
+            const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: '1h' });
+            res.json({ token });
+        } catch (err) {
+            console.error('Error during login:', err);
+            res.status(500).json({ message: 'Internal server error' });
         }
-
-        const user = result.rows[0];
-
-        // Проверка пароля
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid username or password' });
-        }
-
-        // Генерация токена
-        const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: '1h' });
-        res.json({ token });
     }
 );
 
