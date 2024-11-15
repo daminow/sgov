@@ -14,6 +14,22 @@ const pool = new Pool({
     port: 5432,
 });
 
+// Создание таблицы users, если она не существует
+const createUsersTable = async () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(255) NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `;
+    await pool.query(query);
+};
+
+// Вызов функции создания таблицы при запуске сервера
+createUsersTable().catch(err => console.error('Error creating users table:', err));
+
 // 1. Работа с голосованиями
 app.post('/api/votes', async (req, res) => {
     const { name, nominations } = req.body;
