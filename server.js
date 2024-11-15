@@ -3,7 +3,6 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { body, validationResult } = require('express-validator');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan'); // Added for logging
@@ -63,36 +62,33 @@ const errorHandler = (err, req, res, next) => {
 };
 
 // Login endpoint
-app.post('/api/login',
-    body('username').isString().notEmpty(),
-    body('password').isString().notEmpty(),
-    async (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
+app.post('/api/login', async (req, res, next) => {
+    const { username, password } = req.body;
 
-        const { username, password } = req.body;
-        try {
-            const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-
-            if (result.rows.length === 0) {
-                return res.status(401).json({ message: 'Invalid username or password' });
-            }
-
-            const user = result.rows[0];
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                return res.status(401).json({ message: 'Invalid username or password' });
-            }
-
-            const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: '1h' });
-            res.json({ token });
-        } catch (err) {
-            next(err);
-        }
+    // Проверка на наличие полей
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required' });
     }
-);
+
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        const user = result.rows[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: '1h' });
+        res.json({ token });
+    } catch (err) {
+        next(err);
+    }
+});
 
 // Middleware for token authentication
 const authenticateToken = (req, res, next) => {
@@ -271,30 +267,27 @@ app.patch('/api/nominations/:nominationId/candidates/:candidateId/vote', async (
 });
 
 // Работа с сессиями
-app.post('/api/sessions',
-    body('name').isString().notEmpty(),
-    body('type').isString().notEmpty(),
-    async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
+app.post('/api/sessions', async (req, res) => {
+    const { name, type } = req.body;
 
-        const { name, type } = req.body;
-        const id = Math.floor(100000 + Math.random() * 900000).toString();
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const createdAt = new Date();
-        const devices = 0;
-
-        try {
-            await pool.query('INSERT INTO sessions (id, name, createdAt, devices, type, code) VALUES ($1, $2, $3, $4, $5, $6)', [id, name, createdAt, devices, type, code]);
-            res.status(201).json({ id, name, createdAt, devices, type, code });
-        } catch (err) {
-            console.error('Error creating session:', err);
-            res.status(500).json({ message: 'Internal server error' });
-        }
+    // Проверка на наличие полей
+    if (!name || !type) {
+        return res.status(400).json({ message: 'Name and type are required' });
     }
-);
+
+    const id = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const createdAt = new Date();
+    const devices = 0;
+
+    try {
+        await pool.query('INSERT INTO sessions (id, name, createdAt, devices, type, code) VALUES ($1, $2, $3, $4, $5, $6)', [id, name, createdAt, devices, type, code]);
+        res.status(201).json({ id, name, createdAt, devices, type, code });
+    } catch (err) {
+        console.error('Error creating session:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 // Получение всех сессий
 app.get('/api/sessions', async (req, res) => {
