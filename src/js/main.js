@@ -1,4 +1,5 @@
-import {massivesVotes} from './candidates.js';
+import { massivesVotes } from './candidates.js';
+import { createElement, dataToJson, jsonToData, getData, setData } from './data.js'
 
 function createDiv(classList) {
     let div = document.createElement('div')
@@ -80,9 +81,9 @@ if (jsonToData(getCandidatesData('chart')) != null) {
     setCandidatesData('chart', dataToJson(selectChart))
 }
 let jfhghfk = jsonToData(getCandidatesData('candidates'))
-if (jfhghfk === null){
+if (jfhghfk === null) {
     setCandidatesData('candidates', dataToJson(massivesVote))
-} else {massivesVote = jsonToData(getCandidatesData('candidates'))}
+} else { massivesVote = jsonToData(getCandidatesData('candidates')) }
 // false - Начальная школа
 // true - Средняя школа
 let classValue = true
@@ -90,7 +91,7 @@ if (jsonToData(getCandidatesData('classValue')) === true || jsonToData(getCandid
     classValue = jsonToData(getCandidatesData('classValue'))
 } else {
     setCandidatesData('classValue', dataToJson(classValue))
-} 
+}
 if (classValue === false) {
     document.getElementById('prime-btn').textContent = 'Премьер-Министр Начальной школы'
 }
@@ -108,75 +109,75 @@ function createCard(cand) {
     card.append(cardBtn)
     cardBtn.append(cardPhoto, cardText)
     cardText.append(cardTitle, cardClass)
-    if (cand.status === true) {      
+    if (cand.status === true) {
         return true
     }
     cardBtn.onclick = function () {
-        if(selectStatus === false) {
-            if (cand.status === false){
+        if (selectStatus === false) {
+            if (cand.status === false) {
                 cand.vote += 1
                 card.classList.remove('candidate-card__item-na')
                 card.classList.add('candidate-card__item-active')
                 setCandidatesData('chart', dataToJson(''))
                 cand.status = true
                 selectStatus = true
-                if(selectChart === 'presedent'){
+                if (selectChart === 'presedent') {
                     if (presedentOn === true) {
                         presedentBtn.style.display = 'none'
                         massivesVote[0].status = true
                         setCandidatesData('candidates', dataToJson(massivesVote))
                     }
                 }
-                if(selectChart === 'prime'){
+                if (selectChart === 'prime') {
                     if (primeOn === true) {
                         primeBtn.style.display = 'none'
                         massivesVote[1].status = true
                         setCandidatesData('candidates', dataToJson(massivesVote))
                     }
                 }
-                if(selectChart === 'minEdu'){
+                if (selectChart === 'minEdu') {
                     if (minEduOn === true) {
                         minEduBtn.style.display = 'none'
                         massivesVote[2].status = true
                         setCandidatesData('candidates', dataToJson(massivesVote))
                     }
                 }
-                if(selectChart === 'minFin'){
+                if (selectChart === 'minFin') {
                     if (minFinOn === true) {
                         minFinBtn.style.display = 'none'
                         massivesVote[3].status = true
                         setCandidatesData('candidates', dataToJson(massivesVote))
                     }
                 }
-                if(selectChart === 'minEco'){
+                if (selectChart === 'minEco') {
                     if (minEcoOn === true) {
                         minEcoBtn.style.display = 'none'
                         massivesVote[4].status = true
                         setCandidatesData('candidates', dataToJson(massivesVote))
                     }
                 }
-                if(selectChart === 'minSport'){
+                if (selectChart === 'minSport') {
                     if (minSportOn === true) {
                         minSportBtn.style.display = 'none'
                         massivesVote[5].status = true
                         setCandidatesData('candidates', dataToJson(massivesVote))
                     }
                 }
-                if(selectChart === 'minJour'){
+                if (selectChart === 'minJour') {
                     if (minJourOn === true) {
                         minJourBtn.style.display = 'none'
                         massivesVote[6].status = true
                         setCandidatesData('candidates', dataToJson(massivesVote))
                     }
                 }
-                if(selectChart === 'minChar'){
+                if (selectChart === 'minChar') {
                     if (minCharOn === true) {
                         minCharBtn.style.display = 'none'
                         massivesVote[7].status = true
                         setCandidatesData('candidates', dataToJson(massivesVote))
                     }
                 }
-                if(selectChart === 'minAffair'){
+                if (selectChart === 'minAffair') {
                     if (minAffairOn === true) {
                         minAffairBtn.style.display = 'none'
                         massivesVote[8].status = true
@@ -207,7 +208,7 @@ function presedentBtnClick() {
             let candidate = createCard(cand)
             candList.append(candidate)
             presedentOn = true
-            if (candidate === true){
+            if (candidate === true) {
                 presedentBtn.style.display = 'none'
                 massivesVote[0].status = true
                 candList.innerHTML = ''
@@ -218,7 +219,7 @@ function presedentBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-presedentBtn.addEventListener('click', (event) => {selectStatus = false ;presedentBtnClick()})
+presedentBtn.addEventListener('click', (event) => { selectStatus = false; presedentBtnClick() })
 
 
 let primeOn = false
@@ -230,23 +231,23 @@ function primeBtnClick() {
         primeBtn.classList.remove('candidate-type__btn-na')
         primeBtn.classList.add('candidate-type__btn-active')
         candList.innerHTML = ''
-        if (classValue === false){
+        if (classValue === false) {
             for (const cand of massivesVote[1].arrayLow) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 primeOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     primeBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
             }
         }
-        if (classValue === true){
+        if (classValue === true) {
             for (const cand of massivesVote[1].arrayHigh) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 primeOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     primeBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
@@ -257,7 +258,7 @@ function primeBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-primeBtn.addEventListener('click', (event) => {selectStatus = false ;primeBtnClick()})
+primeBtn.addEventListener('click', (event) => { selectStatus = false; primeBtnClick() })
 
 
 let minEduOn = false
@@ -269,23 +270,23 @@ function minEduBtnClick() {
         minEduBtn.classList.remove('candidate-type__btn-na')
         minEduBtn.classList.add('candidate-type__btn-active')
         candList.innerHTML = ''
-        if (classValue === false){
+        if (classValue === false) {
             for (const cand of massivesVote[2].arrayLow) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minEduOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minEduBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
             }
         }
-        if (classValue === true){
+        if (classValue === true) {
             for (const cand of massivesVote[2].arrayHigh) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minEduOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minEduBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
@@ -296,7 +297,7 @@ function minEduBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-minEduBtn.addEventListener('click', (event) => {selectStatus = false ;minEduBtnClick()})
+minEduBtn.addEventListener('click', (event) => { selectStatus = false; minEduBtnClick() })
 
 
 let minFinOn = false
@@ -308,23 +309,23 @@ function minFinBtnClick() {
         minFinBtn.classList.remove('candidate-type__btn-na')
         minFinBtn.classList.add('candidate-type__btn-active')
         candList.innerHTML = ''
-        if (classValue === false){
+        if (classValue === false) {
             for (const cand of massivesVote[3].arrayLow) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minFinOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minFinBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
             }
         }
-        if (classValue === true){
+        if (classValue === true) {
             for (const cand of massivesVote[3].arrayHigh) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minFinOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minFinBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
@@ -335,7 +336,7 @@ function minFinBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-minFinBtn.addEventListener('click', (event) => {selectStatus = false ;minFinBtnClick()})
+minFinBtn.addEventListener('click', (event) => { selectStatus = false; minFinBtnClick() })
 
 
 let minEcoOn = false
@@ -347,23 +348,23 @@ function minEcoBtnClick() {
         minEcoBtn.classList.remove('candidate-type__btn-na')
         minEcoBtn.classList.add('candidate-type__btn-active')
         candList.innerHTML = ''
-        if (classValue === false){
+        if (classValue === false) {
             for (const cand of massivesVote[4].arrayLow) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minEcoOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minEcoBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
             }
         }
-        if (classValue === true){
+        if (classValue === true) {
             for (const cand of massivesVote[4].arrayHigh) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minEcoOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minEcoBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
@@ -374,7 +375,7 @@ function minEcoBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-minEcoBtn.addEventListener('click', (event) => {selectStatus = false ;minEcoBtnClick()})
+minEcoBtn.addEventListener('click', (event) => { selectStatus = false; minEcoBtnClick() })
 
 
 let minSportOn = false
@@ -386,23 +387,23 @@ function minSportBtnClick() {
         minSportBtn.classList.remove('candidate-type__btn-na')
         minSportBtn.classList.add('candidate-type__btn-active')
         candList.innerHTML = ''
-        if (classValue === false){
+        if (classValue === false) {
             for (const cand of massivesVote[5].arrayLow) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minSportOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minSportBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
             }
         }
-        if (classValue === true){
+        if (classValue === true) {
             for (const cand of massivesVote[5].arrayHigh) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minSportOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minSportBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
@@ -413,7 +414,7 @@ function minSportBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-minSportBtn.addEventListener('click', (event) => {selectStatus = false ;minSportBtnClick()})
+minSportBtn.addEventListener('click', (event) => { selectStatus = false; minSportBtnClick() })
 
 
 let minJourOn = false
@@ -425,23 +426,23 @@ function minJourBtnClick() {
         minJourBtn.classList.remove('candidate-type__btn-na')
         minJourBtn.classList.add('candidate-type__btn-active')
         candList.innerHTML = ''
-        if (classValue === false){
+        if (classValue === false) {
             for (const cand of massivesVote[6].arrayLow) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minJourOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minJourBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
             }
         }
-        if (classValue === true){
+        if (classValue === true) {
             for (const cand of massivesVote[6].arrayHigh) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minJourOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minJourBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
@@ -452,7 +453,7 @@ function minJourBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-minJourBtn.addEventListener('click', (event) => {selectStatus = false ;minJourBtnClick()})
+minJourBtn.addEventListener('click', (event) => { selectStatus = false; minJourBtnClick() })
 
 
 let minCharOn = false
@@ -464,23 +465,23 @@ function minCharBtnClick() {
         minCharBtn.classList.remove('candidate-type__btn-na')
         minCharBtn.classList.add('candidate-type__btn-active')
         candList.innerHTML = ''
-        if (classValue === false){
+        if (classValue === false) {
             for (const cand of massivesVote[7].arrayLow) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minCharOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minCharBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
             }
         }
-        if (classValue === true){
+        if (classValue === true) {
             for (const cand of massivesVote[7].arrayHigh) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minCharOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minCharBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
@@ -491,7 +492,7 @@ function minCharBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-minCharBtn.addEventListener('click', (event) => {selectStatus = false ;minCharBtnClick()})
+minCharBtn.addEventListener('click', (event) => { selectStatus = false; minCharBtnClick() })
 
 
 let minAffairOn = false
@@ -503,23 +504,23 @@ function minAffairBtnClick() {
         minAffairBtn.classList.remove('candidate-type__btn-na')
         minAffairBtn.classList.add('candidate-type__btn-active')
         candList.innerHTML = ''
-        if (classValue === false){
+        if (classValue === false) {
             for (const cand of massivesVote[8].arrayLow) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minAffairOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minAffairBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
             }
         }
-        if (classValue === true){
+        if (classValue === true) {
             for (const cand of massivesVote[8].arrayHigh) {
                 let candidate = createCard(cand)
                 candList.append(candidate)
                 minAffairOn = true
-                if (candidate === true){
+                if (candidate === true) {
                     minAffairBtn.style.display = 'none'
                     candList.innerHTML = ''
                 }
@@ -530,7 +531,7 @@ function minAffairBtnClick() {
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
-minAffairBtn.addEventListener('click', (event) => {selectStatus = false ;minAffairBtnClick()})
+minAffairBtn.addEventListener('click', (event) => { selectStatus = false; minAffairBtnClick() })
 
 
 if (selectChart === 'presedent') {
@@ -570,7 +571,7 @@ function checkStatusVote(obj) {
             button.style.display = 'none'
             stt = false
         }
-        if(object.status === false) {
+        if (object.status === false) {
             stt = true
             return
         }
@@ -628,7 +629,7 @@ function resetStatuses(obj) {
     ]
     for (const btun of openButtons) {
         btun.classList.add('candidate-type__btn-na')
-        btun.classList.remove('candidate-type__btn-active')   
+        btun.classList.remove('candidate-type__btn-active')
     }
     setCandidatesData('candidates', dataToJson(massivesVote))
 }
@@ -662,7 +663,7 @@ function startTimer(duration, display) {
 }
 
 function timerThree() {
-    let threeMinutes = 75 
+    let threeMinutes = 75
     startTimer(threeMinutes, timerTitle);
 };
 
