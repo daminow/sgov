@@ -3,20 +3,21 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { body, validationResult } = require('express-validator');
+require('dotenv').config(); // Подключение dotenv для работы с переменными окружения
 
-const SECRET_KEY = 'ваш_секретный_ключ'; // Замените на ваш секретный ключ
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Использование переменной окружения для порта
 
 app.use(express.json());
 
 // PostgreSQL connection
 const pool = new Pool({
-    user: 'postgres',
-    host: '46.16.36.208',
-    database: 'postgres',
-    password: 'timur15092006',
-    port: 5432,
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
 });
 
 // Создание таблицы users, если она не существует
@@ -37,7 +38,7 @@ createUsersTable().catch(err => console.error('Error creating users table:', err
 
 // Настройка CORS
 const corsOptions = {
-    origin: 'http://ваш_домен', // Замените на ваш домен
+    origin: process.env.CORS_ORIGIN, // Использование переменной окружения для домена
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     credentials: true, // Разрешить отправку куки
 };
@@ -45,33 +46,42 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Эндпоинт для входа
-app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+app.post('/api/login', 
+    body('username').isString().notEmpty(),
+    body('password').isString().notEmpty(),
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-    if (result.rows.length === 0) {
-        return res.status(401).json({ message: 'Invalid username or password' });
+        const { username, password } = req.body;
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        const user = result.rows[0];
+
+        // Проверка пароля
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        // Генерация токена
+        const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: '1h' });
+        res.json({ token });
     }
-
-    const user = result.rows[0];
-
-    // Проверка пароля
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return res.status(401).json({ message: 'Invalid username or password' });
-    }
-
-    // Генерация токена
-    const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: '1h' });
-    res.json({ token });
-});
+);
 
 // Middleware для проверки токена
 const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) return res.sendStatus(401);
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
+    jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
         if (err) return res.sendStatus(403);
         req.user = user;
         next();
@@ -250,7 +260,7 @@ app.post('/api/admins/login', async (req, res) => {
     }
 
     // Генерация токена
-    const token = jwt.sign({ id: admin.id, access_level: admin.access_level }, SECRET_KEY, { expiresIn: '1h' });
+    const token = jwt.sign({ id: admin.id, access_level: admin.access_level }, process.env.SECRET_KEY, { expiresIn: '1h' });
     res.json({ token });
 });
 
