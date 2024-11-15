@@ -1,8 +1,12 @@
 {
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "browser-sync": "^3.0.2",
+    "cors": "^2.8.5",
     "del": "^6.1.1",
+    "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-validator": "^7.2.0",
     "gulp": "^4.0.2",
     "gulp-autoprefixer": "^8.0.0",
     "gulp-clean-css": "^4.3.0",
@@ -23,6 +27,7 @@
     "gulp-webp": "^4.0.1",
     "imagemin": "^7.0.1",
     "imagemin-webp": "^6.1.0",
+    "jsonwebtoken": "^9.0.2",
     "sass": "^1.72.0"
   },
   "devDependencies": {
